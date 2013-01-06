@@ -2,6 +2,7 @@ from types import ClassType
 import warnings
 
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models.fields.related import OneToOneField
 from django.db.models.manager import Manager
@@ -33,7 +34,12 @@ class InheritanceQuerySet(QuerySet):
         iter = super(InheritanceQuerySet, self).iterator()
         if getattr(self, 'subclasses', False):
             for obj in iter:
-                sub_obj = [getattr(obj, s) for s in self.subclasses if getattr(obj, s)] or [obj]
+                def get_attr(obj, s):
+                    try:
+                        return getattr(obj,s)
+                    except ObjectDoesNotExist:
+                        return None
+                sub_obj = [getattr(obj, s) for s in self.subclasses if get_attr(obj, s)] or [obj]
                 sub_obj = sub_obj[0]
                 if getattr(self, '_annotated', False):
                     for k in self._annotated:
