@@ -2,18 +2,18 @@ from setuptools import setup, find_packages
 import subprocess
 import os.path
 
-try:
-    # don't get confused if our sdist is unzipped in a subdir of some 
-    # other hg repo
-    if os.path.isdir('.hg'):
-        p = subprocess.Popen(['hg', 'parents', r'--template={rev}\n'],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if not p.returncode:
-            fh = open('HGREV', 'w')
-            fh.write(p.communicate()[0].splitlines()[0])
-            fh.close()
-except (OSError, IndexError):
-    pass
+#try:
+#    # don't get confused if our sdist is unzipped in a subdir of some
+#    # other hg repo
+#    if os.path.isdir('.hg'):
+#        p = subprocess.Popen(['hg', 'parents', r'--template={rev}\n'],
+#                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#        if not p.returncode:
+#            fh = open('HGREV', 'w')
+#            fh.write(p.communicate()[0].splitlines()[0])
+#            fh.close()
+#except (OSError, IndexError):
+#    pass
     
 try:
     hgrev = open('HGREV').read()
@@ -33,6 +33,7 @@ setup(
     author_email='carl@dirtcircle.com',
     url='http://bitbucket.org/carljm/django-model-utils/',
     packages=find_packages(),
+    # six
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
@@ -42,6 +43,7 @@ setup(
         'Programming Language :: Python',
         'Framework :: Django',
     ],
+    requires=['six'],
     zip_safe=False,
     tests_require=["Django>=1.1"],
     test_suite='runtests.runtests'

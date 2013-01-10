@@ -1,4 +1,3 @@
-from types import ClassType
 import warnings
 
 from django.contrib.contenttypes.models import ContentType
@@ -7,6 +6,7 @@ from django.db import models
 from django.db.models.fields.related import OneToOneField
 from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
+import six
 
 
 class InheritanceQuerySet(QuerySet):
@@ -27,7 +27,7 @@ class InheritanceQuerySet(QuerySet):
 
     def annotate(self, *args, **kwargs):
         qset = super(InheritanceQuerySet, self).annotate(*args, **kwargs)
-        qset._annotated = [a.default_alias for a in args] + kwargs.keys()
+        qset._annotated = [a.default_alias for a in args] + list(six.iterkeys(kwargs))
         return qset
 
     def iterator(self):
@@ -70,13 +70,13 @@ class InheritanceCastMixin(object):
         type_to_pks = {}
         for pk, real_type_id in results:
             type_to_pks.setdefault(real_type_id, []).append(pk)
-        content_types = ContentType.objects.in_bulk(type_to_pks.keys())
+        content_types = ContentType.objects.in_bulk(list(six.iterkeys(type_to_pks)))
         pk_to_child = {}
-        for real_type_id, pks in type_to_pks.iteritems():
+        for real_type_id, pks in six.iteritems(type_to_pks):
             content_type = content_types[real_type_id]
             child_type = content_type.model_class()
             children = child_type._default_manager.in_bulk(pks)
-            for pk, child in children.iteritems():
+            for pk, child in six.iteritems(children):
                 pk_to_child[pk] = child
         children = []
         # sort children into same order as parents where returned
@@ -185,7 +185,7 @@ def manager_from(*mixins, **kwds):
     bases = [kwds.get('queryset_cls', QuerySet)]
     methods = {}
     for mixin in mixins:
-        if isinstance(mixin, (ClassType, type)):
+        if isinstance(mixin, type):
             bases.append(mixin)
         else:
             try: methods[mixin.__name__] = mixin
@@ -193,7 +193,7 @@ def manager_from(*mixins, **kwds):
                 raise TypeError('Mixin must be class or function, not %s' %
                                 mixin.__class__)
     # create the QuerySet subclass
-    id = hash(mixins + tuple(kwds.iteritems()))
+    id = hash(mixins + tuple(six.iteritems(kwds)))
     new_queryset_cls = type('Queryset_%d' % id, tuple(bases), methods)
     # create the Manager subclass
     bases[0] = manager_cls = kwds.get('manager_cls', Manager)

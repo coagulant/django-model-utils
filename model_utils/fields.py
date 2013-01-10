@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.db import models
 from django.conf import settings
+import six
 
 from model_utils import Choices
 
@@ -154,6 +155,12 @@ class SplitText(object):
     # allows display via templates without .content necessary
     def __unicode__(self):
         return self.content
+
+    def __str__(self):
+        if six.PY3:
+            return self.content
+        else:
+            return self.__unicode__().encode('utf-8')
 
 class SplitDescriptor(object):
     def __init__(self, field):

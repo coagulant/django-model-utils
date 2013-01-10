@@ -10,6 +10,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 
 from django.contrib.contenttypes.models import ContentType
+import six
 
 from model_utils import Choices
 from model_utils.fields import get_excerpt, MonitorField
@@ -47,8 +48,8 @@ class GetExcerptTests(TestCase):
 
 
 class SplitFieldTests(TestCase):
-    full_text = u'summary\n\n<!-- split -->\n\nmore'
-    excerpt = u'summary\n'
+    full_text = 'summary\n\n<!-- split -->\n\nmore'
+    excerpt = 'summary\n'
 
 
     def setUp(self):
@@ -57,7 +58,7 @@ class SplitFieldTests(TestCase):
 
 
     def test_unicode_content(self):
-        self.assertEquals(unicode(self.post.body), self.full_text)
+        self.assertEquals(six.text_type(self.post.body), self.full_text)
 
 
     def test_excerpt(self):
@@ -85,17 +86,17 @@ class SplitFieldTests(TestCase):
 
 
     def test_assign_to_body(self):
-        new_text = u'different\n\n<!-- split -->\n\nother'
+        new_text = 'different\n\n<!-- split -->\n\nother'
         self.post.body = new_text
         self.post.save()
-        self.assertEquals(unicode(self.post.body), new_text)
+        self.assertEquals(six.text_type(self.post.body), new_text)
 
 
     def test_assign_to_content(self):
-        new_text = u'different\n\n<!-- split -->\n\nother'
+        new_text = 'different\n\n<!-- split -->\n\nother'
         self.post.body.content = new_text
         self.post.save()
-        self.assertEquals(unicode(self.post.body), new_text)
+        self.assertEquals(six.text_type(self.post.body), new_text)
 
 
     def test_assign_to_excerpt(self):
@@ -118,7 +119,7 @@ class SplitFieldTests(TestCase):
     def test_assign_splittext(self):
         a = Article(title='Some Title')
         a.body = self.post.body
-        self.assertEquals(a.body.excerpt, u'summary\n')
+        self.assertEquals(a.body.excerpt, 'summary\n')
 
 
     def test_value_to_string(self):
@@ -559,7 +560,7 @@ if introspector:
 
 
         def test_no_excerpt_field_works(self):
-            from models import NoRendered
+            from .models import NoRendered
             self.assertRaises(FieldDoesNotExist,
                               NoRendered._meta.get_field,
                               '_body_excerpt')
